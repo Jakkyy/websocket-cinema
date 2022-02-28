@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> CINEMA </title>
+    <link rel="stylesheet" href="./static/style/index.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+</head>
+
+<body style="background-color:#061966;font-family:Arial, Helvetica, sans-serif;">
+
+    <div class="navbar">
+        <h1 id="welcome" style="color:white;display: inline;"> Benvenuto
+            <h1 id="username" style="color:red; display: inline;"> </h1>
+        </h1>
+    </div>
+
+    <div class="sub-menu">
+
+    </div>
+
+    <div id="seats">
+
+    </div>
+
+
+    <script src="./static/js/script.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        (async() => {
+
+            do
+                txt = prompt("Inserisci il tuo username");
+            while (txt == "" || txt == null);
+
+
+            if (txt == "") txt = "ciao";
+            const socket = await io();
+            if (!socket.id) socket.id = "unavailable";
+
+            await socket.emit("ip", {
+                ip: await getIP(),
+                id: socket.id,
+                username: txt,
+            });
+
+            fetchSeat(socket, txt);
+
+            socket.on("updatedSeatfromServer", (arg) => {
+                if (arg == "clearedFromAdmin") {
+                    alert("Cleared a row")
+                }
+                x(socket, txt);
+            })
+
+            socket.on("admin", (arg) => {
+                if (arg.admin == true) {
+                    admin(socket);
+                }
+            })
+
+            socket.on("functionFromAdmin", (arg) => {
+                if (arg == "clear") {
+                    alert("Seleziona una fila da pulire -> premere ctrl + click");
+                    prova = document.addEventListener("click", function clearTarget(event) {
+                        if (event.ctrlKey == true) {
+                            clearFromClient(window.event.target, socket);
+                            document.removeEventListener("click", clearTarget);
+                        } else {
+                            return alert("Tasto ctrl non premuto")
+                            document.removeEventListener("click", clearTarget);
+                        }
+                    })
+
+                }
+            })
+        })();
+    </script>
+
+</body>
+
+</html>
