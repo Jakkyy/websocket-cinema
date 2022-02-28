@@ -1,0 +1,7 @@
+seat_available {
+    background-image: url("../img/cinema_seat_available.svg")
+}
+
+seat_oos {
+    background-image: url("../img/cinema_seat_oos.svg")
+}
