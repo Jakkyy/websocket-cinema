@@ -51,7 +51,7 @@ async function fetchSeat(socket, nickname) {
 			element.onclick = () => {
 				changeValue(window.event, socket, nickname);
 			};
-			element.style = "height: 50px !important;width: 50px !important;padding: 10px !important;"
+			element.style = "height: 50px !important;width: 50px !important;padding: 10px !important;";
 			element_div.appendChild(element);
 		});
 	});
@@ -132,7 +132,7 @@ async function changeValue(element, socket, username) {
 	if (element.ctrlKey == true) return;
 	//if (element.target.src == "http://localhost:3000/static/img/cinema_seat_oos.svg" || element.target.src == "http://10.130.0.116:3000/static/img/cinema_seat_oos.svg") return alert("Non puoi");
 
-	let index = element.target.id.replace("n", "").split("-")
+	let index = element.target.id.replace("n", "").split("-");
 
 	//get json file 
 	let posti_matrice = (await (await fetch("static/data/data2.json")).json()).posti;
