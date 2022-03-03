@@ -27,7 +27,7 @@ async function init(socket) {
 			if(arg.clear) {
 				alert("Cleared a row");
 			}
-			normalFetchSeat(socket, txt);
+			normalFetchSeat(txt);
 			break;
 		/*
 		case "admin":
@@ -63,7 +63,7 @@ async function init(socket) {
 
 async function initialfetchSeat(socket, nickname) {
 
-	let posti_matrice = (await (await fetch("./static/data/data2.json")).json()).posti;
+	let posti_matrice = (await (await fetch("./static/data/data.json")).json()).posti;
 
 	let div = document.getElementById("seats");
 
@@ -103,7 +103,8 @@ async function initialfetchSeat(socket, nickname) {
 		});
 	});
 
-	let tagWelcome = document.getElementById("username");
+
+	let tagWelcome = document.getElementById("username"), newNickname;
     
 	if (nickname == "admin:admin") {
 		tagWelcome.innerHTML = "ADMIN";
@@ -114,20 +115,21 @@ async function initialfetchSeat(socket, nickname) {
 		element.innerHTML = "Change Nickname";
 
 		element.onclick = () => {
+			newNickname = prompt("Scegli il tuo nuovo nickname");
 			socket.emit("functionForServer", {
 				req: "changeNickname",
-				nickname: nickname
+				oldName: nickname,
+				newName: newNickname
 			});
 		};
 
 		document.getElementsByClassName("sub-menu")[0].append(element);
 	}
-
 }
 
-async function normalFetchSeat(socket, nickname) {
+async function normalFetchSeat(nickname) {
 
-	let posti_matrice = (await (await fetch("./static/data/data2.json")).json()).posti;
+	let posti_matrice = (await (await fetch("./static/data/data.json")).json()).posti;
 
 	let div = document.getElementById("seats");
 
@@ -155,14 +157,6 @@ async function normalFetchSeat(socket, nickname) {
 	});
 }
 
-/*
-async function clearFromClient(element, socket) {
-	let row = element.id.replace("n", "").split("-")[0];
-
-	socket.emit("functionFromClient", { req: "clearRow", NumRow: row });
-}
-*/
-
 async function changeValue(element, socket, username) {
 
 	if (element.ctrlKey == true) return;
@@ -170,8 +164,9 @@ async function changeValue(element, socket, username) {
 
 	let index = element.target.id.replace("n", "").split("-");
 
+	console.log(element.target.id);
 	//get json file 
-	let posti_matrice = (await (await fetch("static/data/data2.json")).json()).posti;
+	let posti_matrice = (await (await fetch("static/data/data.json")).json()).posti;
 
 	//get the numer (oos or available) with index number
 	let num = posti_matrice[index[0]][index[1]];
