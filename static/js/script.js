@@ -57,12 +57,23 @@ async function fetchSeat(socket, nickname) {
 	});
 
 	let tagWelcome = document.getElementById("username");
-	let txt;
     
-	if (txt == "admin:admin") {
+	if (nickname == "admin:admin") {
 		tagWelcome.innerHTML = "ADMIN";
 	} else {
-		tagWelcome.innerHTML = txt.toLowerCase();
+		tagWelcome.innerHTML = nickname.toLowerCase();
+
+		let element = document.createElement("button");
+		element.innerHTML = "Change Nickname";
+
+		element.onclick = () => {
+			socket.emit("functionFromClient", {
+				nickname: nickname,
+				req: "changeNickname"
+			});
+		};
+
+		document.getElementsByClassName("sub-menu")[0].append(element);
 	}
 
 }
@@ -74,7 +85,7 @@ async function admin(socket) {
 	element.innerHTML = "Clear Row";
 
 	element.onclick = () => {
-		socket.emit("functionFromAdmin", {
+		socket.emit("functionFromClient", {
 			req: "clear"
 		});
 	};

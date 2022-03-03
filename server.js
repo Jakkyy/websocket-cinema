@@ -78,7 +78,7 @@ io.on("connection", async(socket) => {
 	});
 
 
-	socket.on("functionFromAdmin", (arg) => {
+	socket.on("functionFromClient", (arg) => {
 
 		switch (arg.req) {
 		case "clear":
@@ -88,6 +88,9 @@ io.on("connection", async(socket) => {
 			socket.on("functionFromAdmin", () => {
 
 			});
+			break;
+		case "changeNickname":
+			console.log("Nickanme ");
 		}
 	});
 });

@@ -62,7 +62,7 @@
                 }
             })
 
-            socket.on("functionFromAdmin", (arg) => {
+            socket.on("functionFromClient", (arg) => {
                 if (arg == "clear") {
                     alert("Seleziona una fila da pulire -> premere ctrl + click");
                     prova = document.addEventListener("click", function clearTarget(event) {
@@ -75,7 +75,7 @@
                         }
                     })
 
-                }
+                } 
             })
         })();
     </script>
