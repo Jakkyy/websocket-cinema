@@ -164,7 +164,6 @@ async function changeValue(element, socket, username) {
 
 	let index = element.target.id.replace("n", "").split("-");
 
-	console.log(element.target.id);
 	//get json file 
 	let posti_matrice = (await (await fetch("static/data/data.json")).json()).posti;
 
@@ -174,7 +173,7 @@ async function changeValue(element, socket, username) {
 	num.ownedBy = username;
 
 	//passing to the server with "UpdatedSeat" the index of the changed seat with the current status -> 0 --> available -> 1 --> oos
-	socket.emit("functionForServer", { req: "updatedSeat", indexes: index, status: num });
+	socket.emit("functionForServer", { req: "updatedSeat", id: element.target.id, status: num });
 }
 
 async function getIP() {
