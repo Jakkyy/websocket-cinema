@@ -159,8 +159,8 @@ async function normalFetchSeat(nickname) {
 
 async function changeValue(element, socket, username) {
 
-	if (element.ctrlKey == true) return;
-	//if (element.target.src == "http://localhost:3000/static/img/cinema_seat_oos.svg" || element.target.src == "http://10.130.0.116:3000/static/img/cinema_seat_oos.svg") return alert("Non puoi");
+	if (element.ctrlKey == true) return true;
+	if (username != "admin:admin" && element.target.src.includes("cinema_seat_oos.svg")) return alert("Non puoi, già selezionato");
 
 	let index = element.target.id.replace("n", "").split("-");
 
