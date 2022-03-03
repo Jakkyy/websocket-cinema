@@ -1,19 +1,69 @@
 /* eslint-disable no-unused-vars */
-async function getIP() {
-	// eslint-disable-next-line no-undef
-	let data = await $.get("https://www.cloudflare.com/cdn-cgi/trace");
-	data = data.trim().split("\n").reduce(function(obj, pair) {
-		pair = pair.split("=");
-		return obj[pair[0]] = pair[1], obj;
-	}, {});
-	return data.ip;
+async function init(socket) {
+	let txt;
+	do {
+		txt = prompt("Inserisci il tuo username");
+	}	
+	while (txt == "" || txt == null);
+
+	if (!socket.id) socket.id = "unavailable";
+
+	await socket.emit("ip", {
+		ip: await getIP(),
+		id: socket.id,
+		username: txt,
+	});
+
+	//creazione base dei posti dal file json
+	initialfetchSeat(socket, txt);
+
+	let element;
+
+	socket.on("functionFromClient", (arg) => {
+
+		switch(arg.req) {
+		case "updatedSeatfromServer":
+			//se viene premuto bottone clear row
+			if(arg.clear) {
+				alert("Cleared a row");
+			}
+			normalFetchSeat(socket, txt);
+			break;
+		/*
+		case "admin":
+			console.log("Benvenuto ADMIN");
+
+			element = document.createElement("button");
+			element.innerHTML = "Clear Row";
+			element.onclick = () => { clearRow(socket);	};
+
+			document.getElementsByClassName("sub-menu")[0].append(element);
+			break;
+		
+		case "clear":
+			alert("Seleziona una fila da pulire -> premere ctrl + click");
+			document.addEventListener("click", function clearTarget(event) {
+				if (event.ctrlKey == true) {
+
+					let row = window.event.target.id.replace("n", "").split("-")[0];
+
+					socket.emit("functionForServer", { req: "clearRow", NumRow: row });
+					//clearFromClient(window.event.target, socket);
+					document.removeEventListener("click", clearTarget);
+				} else {
+					alert("Tasto ctrl non premuto");
+					return document.removeEventListener("click", clearTarget);
+				}
+			});
+			break;
+		*/
+		}
+	});
 }
 
-async function fetchSeat(socket, nickname) {
+async function initialfetchSeat(socket, nickname) {
 
 	let posti_matrice = (await (await fetch("./static/data/data2.json")).json()).posti;
-
-	console.log(posti_matrice);
 
 	let div = document.getElementById("seats");
 
@@ -22,8 +72,8 @@ async function fetchSeat(socket, nickname) {
 		console.log(`Fila num ${i} -> ${row}`);
 
 		let element_div = document.createElement("div");
-		element_div.style.padding = "50px";
 		element_div.id = `row ${i}`;
+		element_div.classList.add("seat-row");
 
 		div.appendChild(element_div);
 
@@ -34,24 +84,21 @@ async function fetchSeat(socket, nickname) {
 			if (seat.statusSeat == 0) {
 				path = "./static/img/cinema_seat_available.svg";
 			} else if (seat.statusSeat == 1) {
-
 				if (seat.ownedBy == nickname) {
 					path = "./static/img/cinema_seat_takedByMe.svg";
 				} else {
 					path = "./static/img/cinema_seat_oos.svg";
 				}
-
-
 			}
 
 			let element = document.createElement("input");
+			element.classList.add("seat");
 			element.type = "image";
 			element.src = path;
 			element.id = `n${i}-${count}`;
 			element.onclick = () => {
 				changeValue(window.event, socket, nickname);
 			};
-			element.style = "height: 50px !important;width: 50px !important;padding: 10px !important;";
 			element_div.appendChild(element);
 		});
 	});
@@ -67,9 +114,9 @@ async function fetchSeat(socket, nickname) {
 		element.innerHTML = "Change Nickname";
 
 		element.onclick = () => {
-			socket.emit("functionFromClient", {
-				nickname: nickname,
-				req: "changeNickname"
+			socket.emit("functionForServer", {
+				req: "changeNickname",
+				nickname: nickname
 			});
 		};
 
@@ -78,36 +125,13 @@ async function fetchSeat(socket, nickname) {
 
 }
 
-async function admin(socket) {
-	console.log("Benvenuto ADMIN");
-
-	let element = document.createElement("button");
-	element.innerHTML = "Clear Row";
-
-	element.onclick = () => {
-		socket.emit("functionFromClient", {
-			req: "clear"
-		});
-	};
-
-	document.getElementsByClassName("sub-menu")[0].append(element);
-}
-
-
-async function addRow(socket, args) {
-	socket.emit("functionFromAdmin", { req: args });
-}
-
-async function x(socket, nickname) {
+async function normalFetchSeat(socket, nickname) {
 
 	let posti_matrice = (await (await fetch("./static/data/data2.json")).json()).posti;
 
-	console.log(posti_matrice);
 	let div = document.getElementById("seats");
 
 	posti_matrice.map(async(row, i) => {
-		//console.log(`Fila num ${i} -> ${row}`);
-
 		row.map((seat, count) => {
 
 			let id = `#n${i}-${count}`;
@@ -131,12 +155,13 @@ async function x(socket, nickname) {
 	});
 }
 
+/*
 async function clearFromClient(element, socket) {
 	let row = element.id.replace("n", "").split("-")[0];
 
-	socket.emit("clearRow", { NumRow: row });
+	socket.emit("functionFromClient", { req: "clearRow", NumRow: row });
 }
-
+*/
 
 async function changeValue(element, socket, username) {
 
@@ -152,6 +177,36 @@ async function changeValue(element, socket, username) {
 	let num = posti_matrice[index[0]][index[1]];
 
 	num.ownedBy = username;
+
 	//passing to the server with "UpdatedSeat" the index of the changed seat with the current status -> 0 --> available -> 1 --> oos
-	socket.emit("updatedSeat", { indexes: index, status: num });
+	socket.emit("functionForServer", { req: "updatedSeat", indexes: index, status: num });
 }
+
+async function getIP() {
+	// eslint-disable-next-line no-undef
+	let data = await $.get("https://www.cloudflare.com/cdn-cgi/trace");
+	data = data.trim().split("\n").reduce(function(obj, pair) {
+		pair = pair.split("=");
+		return obj[pair[0]] = pair[1], obj;
+	}, {});
+	return data.ip;
+}
+
+/*
+async function clearRow(socket) {
+	//alert("Seleziona una fila da pulire -> premere ctrl + click");
+	document.addEventListener("click", function clearTarget(event) {
+		if (event.ctrlKey == true) {
+
+			let row = window.event.target.id.replace("n", "").split("-")[0];
+
+			socket.emit("functionForServer", { req: "clearRow", NumRow: row });
+			//clearFromClient(window.event.target, socket);
+			document.removeEventListener("click", clearTarget);
+		} else {
+			alert("Tasto ctrl non premuto");
+			return document.removeEventListener("click", clearTarget);
+		}
+	});
+}
+*/

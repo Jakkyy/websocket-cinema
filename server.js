@@ -17,6 +17,8 @@ app.get("/", (req, res) => {
 
 //quando un client effettua una connessione
 io.on("connection", async(socket) => {
+
+
 	socket.on("ip", (arg) => {
 
 		//read user log file to see if socket ip already exist = already visited the site
@@ -42,12 +44,14 @@ io.on("connection", async(socket) => {
 		console.log(arg);
 
 		if (arg.username == "admin:admin") {
-			socket.emit("admin", {
+			socket.emit("functionFromClient", {
+				req: "admin",
 				admin: true,
 			});
 		}
 	});
 
+	/*
 	socket.on("updatedSeat", (arg) => {
 
 		console.log(arg);
@@ -63,7 +67,7 @@ io.on("connection", async(socket) => {
 		fs.writeFileSync("./static/data/data2.json", JSON.stringify(data, null));
 		io.emit("updatedSeatfromServer", "ciao");
 	});
-
+	
 	socket.on("clearRow", (arg) => {
 		let data = JSON.parse(fs.readFileSync("./static/data/data2.json"));
 
@@ -76,11 +80,13 @@ io.on("connection", async(socket) => {
 		fs.writeFileSync("./static/data/data2.json", JSON.stringify(data, null));
 		io.emit("updatedSeatfromServer", "clearedFromAdmin");
 	});
-
-
-	socket.on("functionFromClient", (arg) => {
+	*/
+	let data;
+	
+	socket.on("functionForServer", (arg) => {
 
 		switch (arg.req) {
+		/*
 		case "clear":
 			console.log("richiesto clear from socket");
 
@@ -89,8 +95,31 @@ io.on("connection", async(socket) => {
 
 			});
 			break;
+		*/
 		case "changeNickname":
-			console.log("Nickanme ");
+			console.log("Nickname");
+			break;
+		case "clearRow":
+			data = JSON.parse(fs.readFileSync("./static/data/data2.json"));
+
+			data.posti[arg.NumRow] = ["0", "0", "0", "0", "0", "0", "0", "0"];
+
+			fs.writeFileSync("./static/data/data2.json", JSON.stringify(data, null));
+			io.emit("functionFromClient", { req: "updatedSeatfromServer", clear: true });
+			break;
+		case "updatedSeat":
+			console.log(arg);
+			console.log(`detected click on seat, fila n.${parseInt(arg.indexes[0]) +1}, posto n.${parseInt(arg.indexes[1]) + 1}`);
+
+			data = JSON.parse(fs.readFileSync("./static/data/data2.json"));
+
+			//prende il posto esatto della matrice del sedile cliccato tramite gli args passati (in questo caso array di indici della matrice) e conversione del nmumero del sedile con XOR -> ^=1 (cosi non ci sono controlli ulteriori ma in automatico viene switchato)
+			data.posti[arg.indexes[0]][arg.indexes[1]].statusSeat = (arg.status.statusSeat ^= 1).toString();
+			data.posti[arg.indexes[0]][arg.indexes[1]].ownedBy = arg.status.ownedBy;
+			//da sistemare, mettere posot normale
+			fs.writeFileSync("./static/data/data2.json", JSON.stringify(data, null));
+			io.emit("functionFromClient", { req: "updatedSeatfromServer" });
+			break;
 		}
 	});
 });

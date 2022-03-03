@@ -31,52 +31,9 @@
     <script src="/socket.io/socket.io.js"></script>
     <script>
         (async() => {
-
-            do
-                txt = prompt("Inserisci il tuo username");
-            while (txt == "" || txt == null);
-
-
-            if (txt == "") txt = "ciao";
             const socket = await io();
-            if (!socket.id) socket.id = "unavailable";
-
-            await socket.emit("ip", {
-                ip: await getIP(),
-                id: socket.id,
-                username: txt,
-            });
-
-            fetchSeat(socket, txt);
-
-            socket.on("updatedSeatfromServer", (arg) => {
-                if (arg == "clearedFromAdmin") {
-                    alert("Cleared a row")
-                }
-                x(socket, txt);
-            })
-
-            socket.on("admin", (arg) => {
-                if (arg.admin == true) {
-                    admin(socket);
-                }
-            })
-
-            socket.on("functionFromClient", (arg) => {
-                if (arg == "clear") {
-                    alert("Seleziona una fila da pulire -> premere ctrl + click");
-                    prova = document.addEventListener("click", function clearTarget(event) {
-                        if (event.ctrlKey == true) {
-                            clearFromClient(window.event.target, socket);
-                            document.removeEventListener("click", clearTarget);
-                        } else {
-                            return alert("Tasto ctrl non premuto")
-                            document.removeEventListener("click", clearTarget);
-                        }
-                    })
-
-                } 
-            })
+            //./static/js/script.js
+            init(socket);
         })();
     </script>
 
