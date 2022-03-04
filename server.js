@@ -31,7 +31,7 @@ io.on("connection", async(socket) => {
 
 			console.log(arg);
 			user_data.push(arg);
-			fs.writeFileSync("./static/data/user_log.json", JSON.stringify(user_data, null, 4));
+			fs.writeFileSync("./static/data/user_log.json", JSON.stringify(user_data, null, "\t"));
 		} else {
 			//if the ip already entered the site one time, modify only the socket id
 			console.log("existing user connected -> ");
@@ -40,7 +40,7 @@ io.on("connection", async(socket) => {
 			let t = user_data.find(element => element.ip == arg.ip);
 			t.id = arg.id;
 			//re-writing the file with the edited user_data
-			fs.writeFileSync("./static/data/user_log.json", JSON.stringify(user_data, null, 4));
+			fs.writeFileSync("./static/data/user_log.json", JSON.stringify(user_data, null, "\t"));
 		}
 		console.log(arg);
 
@@ -67,7 +67,7 @@ io.on("connection", async(socket) => {
 			seat = data.posti[index[0]][index[1]];
 			seat.statusSeat ^= 1, seat.ownedBy = arg.status.ownedBy;
 			
-			fs.writeFileSync("./static/data/data.json", JSON.stringify(data, null));
+			fs.writeFileSync("./static/data/data.json", JSON.stringify(data, null, "\t"));
 			io.emit("functionFromClient", { req: "updatedSeatfromServer" });
 			break;
                 /*
