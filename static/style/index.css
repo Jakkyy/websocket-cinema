@@ -1,3 +1,22 @@
+#welcome {
+    color:white;
+    display: inline
+}
+
+#username {
+    color: red;
+    display: inline
+}
+
+#counter-text{
+    color:white;
+    display: inline;
+}
+
+#counter{
+    color: red;
+    display: inline;
+}
 .seat-row {
     padding: 50px
 }
