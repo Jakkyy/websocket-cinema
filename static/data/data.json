@@ -70,8 +70,12 @@
 		],
 		[
 			{
-				"ownedBy": "",
-				"statusSeat": 0
+				"ownedBy": "jvkky",
+				"statusSeat": 1
+			},
+			{
+				"ownedBy": "jvkky",
+				"statusSeat": 1
 			},
 			{
 				"ownedBy": "",
@@ -90,16 +94,12 @@
 				"statusSeat": 0
 			},
 			{
-				"ownedBy": "",
-				"statusSeat": 0
+				"ownedBy": "jvkky",
+				"statusSeat": 1
 			},
 			{
-				"ownedBy": "",
-				"statusSeat": 0
-			},
-			{
-				"ownedBy": "",
-				"statusSeat": 0
+				"ownedBy": "jvkky",
+				"statusSeat": 1
 			}
 		],
 		[

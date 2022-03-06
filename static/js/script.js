@@ -14,7 +14,7 @@ async function init(socket) {
 
 	let ip_info = await getIP();
 
-	await socket.emit("ip", {
+	await socket.emit("ip_info_to_server", {
 		ip_info: {
 			ip: ip_info.ip,
 			location: ip_info.loc,
@@ -79,7 +79,7 @@ async function init(socket) {
 			counter_div.innerHTML = el_counter;
 		}
 	});
-	
+
 	
 
 	socket.on("functionForClient", (arg) => {

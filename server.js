@@ -5,7 +5,7 @@ const server = http.createServer(app);
 const { Server } = require("socket.io");
 const io = new Server(server);
 const fs = require("fs");
-
+ 
 //load static folder for static element
 app.use("/static", express.static("./static"));
 
@@ -14,22 +14,24 @@ app.get("/", (req, res) => {
 	res.sendFile(__dirname + "/index.html");
 });
 
-let data = JSON.parse(fs.readFileSync("./static/data/data.json"));
+let data = JSON.parse(fs.readFileSync(__dirname + "/static/data/data.json"));
 
 data.posti.forEach(arr => {
 	arr.forEach(elem => {
 		if(elem.ownedBy == "") elem.statusSeat = 0;
 	});
-	fs.writeFileSync("./static/data/data.json", JSON.stringify(data, null, "\t"));
+	fs.writeFileSync(__dirname + "/static/data/data.json", JSON.stringify(data, null, "\t"));
 });
 
 //quando un client effettua una connessione
 io.on("connection", async(socket) => {
 
-	//read user log file to see if socket ip already exist = already visited the site
-	let user_data = JSON.parse(fs.readFileSync("./static/data/user_log.json", "utf-8"));
+	console.log(__dirname + "/static/");
 
-	socket.on("ip", (arg) => {
+	//read user log file to see if socket ip already exist = already visited the site
+	let user_data = JSON.parse(fs.readFileSync(__dirname + "/static/data/user_log.json", "utf-8"));
+
+	socket.on("ip_info_to_server", (arg) => {
 	
 		if (!JSON.stringify(user_data).includes(arg.ip_info.ip)) {
 			//if a new user sava all the data (ip and socket id) in the json
@@ -37,7 +39,7 @@ io.on("connection", async(socket) => {
 
 			console.log(arg);
 			user_data.push(arg);
-			fs.writeFileSync("./static/data/user_log.json", JSON.stringify(user_data, null, "\t"));
+			fs.writeFileSync(__dirname + "/static/data/user_log.json", JSON.stringify(user_data, null, "\t"));
 		} else {
 			//if the ip already entered the site one time, modify only the socket id
 			console.log("existing user connected -> ");
@@ -49,7 +51,7 @@ io.on("connection", async(socket) => {
 			if(arg.socket_id != "unavailable") t.socket_id = arg.socket_id;
 			
 			//re-writing the file with the edited user_data
-			fs.writeFileSync("./static/data/user_log.json", JSON.stringify(user_data, null, "\t"));
+			fs.writeFileSync(__dirname + "/static/data/user_log.json", JSON.stringify(user_data, null, "\t"));
 		}
 		console.log(arg);
 
@@ -63,7 +65,7 @@ io.on("connection", async(socket) => {
 
 	socket.on("functionForServer", (arg) => {
 
-		data = JSON.parse(fs.readFileSync("./static/data/data.json"));
+		data = JSON.parse(fs.readFileSync(__dirname + "/static/data/data.json"));
 		let index, seat;
 
 		switch (arg.req) {
@@ -77,7 +79,7 @@ io.on("connection", async(socket) => {
 			seat = data.posti[index[0]][index[1]];
 			seat.statusSeat ^= 1, seat.ownedBy = arg.status.ownedBy;
 			
-			fs.writeFileSync("./static/data/data.json", JSON.stringify(data, null, "\t"));
+			fs.writeFileSync(__dirname + "/static/data/data.json", JSON.stringify(data, null, "\t"));
 			io.emit("functionForClient", { req: "updatedSeatfromServer" });
 			break;
                 /*
