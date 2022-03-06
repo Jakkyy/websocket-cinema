@@ -74,6 +74,8 @@ async function init(socket) {
 				el_array.push(element);
 				el_counter++;
 			}
+
+			console.log("ciao");
 		
 			
 			counter_div.innerHTML = el_counter;
