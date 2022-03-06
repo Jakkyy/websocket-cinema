@@ -5,6 +5,7 @@ var counter_div = document.getElementById("counter");
 
 async function init(socket) {
 	let txt;
+
 	do {
 		txt = prompt("Inserisci il tuo username");
 	}	
@@ -22,13 +23,73 @@ async function init(socket) {
 			version: ip_info.http
 		},
 		socket_id: socket.id,
-		username: txt,
+		username: [txt],
 	});
 
 	//creazione base dei posti dal file json
 	initialfetchSeat(socket, txt);
 
 	let element;
+
+	let tagWelcome = document.getElementById("username"), newNickname;
+	let subMenu = document.getElementsByClassName("sub-menu")[0];
+
+	socket.on("functionForClient", (arg) => {
+
+		switch(arg.req) {
+		case "updatedSeatfromServer":
+			console.log("ciao");
+			normalFetchSeat(txt);
+			break;
+		case "init_btn":
+			if(arg.admin) {
+				tagWelcome.innerHTML = "ADMIN";
+
+		
+				let clear_element = document.createElement("button");
+				clear_element.disabled = true;
+				clear_element.id = "clear_btn";
+
+				clear_element.innerHTML = "Clear seat";
+
+				clear_element.onclick = () => {
+					el_array.forEach(input => {
+						changeValue(input, socket, txt);
+					});
+				};
+				subMenu.append(clear_element);
+			} else {
+				tagWelcome.innerHTML = txt.toLowerCase();
+
+				let nick_element = document.createElement("button");
+				nick_element.innerHTML = "Change Nickname";
+		
+				nick_element.onclick = () => {
+					newNickname = prompt("Scegli il tuo nuovo nickname");
+					socket.emit("functionForServer", {
+						req: "changeNickname",
+						oldName: txt,
+						newName: newNickname
+					});
+				};
+		
+				let reserve_element = document.createElement("button");
+				reserve_element.disabled = true;
+				reserve_element.id = "reserve_btn";
+		
+				reserve_element.innerHTML = "Acquista";
+		
+				reserve_element.onclick = () => {
+					el_array.forEach(input => {
+						changeValue(input, socket, txt);
+					});
+				};
+		
+				subMenu.append(nick_element, reserve_element);
+			}
+			break;
+		}
+	});
 
 	document.addEventListener("click", (event) => {
 
@@ -42,7 +103,7 @@ async function init(socket) {
 
 			if(el_counter >= 0) document.getElementById("clear_btn").disabled = false;
 
-			element = document.getElementById(event.target.id);
+			let element = document.getElementById(event.target.id);
 
 			if(regex_oos.test(element.src) == true ){
 				element.src = "./static/img/cinema_seat_selected.svg";
@@ -74,50 +135,8 @@ async function init(socket) {
 				el_array.push(element);
 				el_counter++;
 			}
-
-			console.log("ciao");
-		
 			
 			counter_div.innerHTML = el_counter;
-		}
-	});
-
-	
-
-	socket.on("functionForClient", (arg) => {
-
-		switch(arg.req) {
-		case "updatedSeatfromServer":
-			normalFetchSeat(txt);
-			break;
-		/*
-		case "admin":
-			console.log("Benvenuto ADMIN");
-
-			element = document.createElement("button");
-			element.innerHTML = "Clear Row";
-			element.onclick = () => { clearRow(socket);	};
-
-			document.getElementsByClassName("sub-menu")[0].append(element);
-			break;
-		
-		case "clear":
-			alert("Seleziona una fila da pulire -> premere ctrl + click");
-			document.addEventListener("click", function clearTarget(event) {
-				if (event.ctrlKey == true) {
-
-					let row = window.event.target.id.replace("n", "").split("-")[0];
-
-					socket.emit("functionForServer", { req: "clearRow", NumRow: row });
-					//clearFromClient(window.event.target, socket);
-					document.removeEventListener("click", clearTarget);
-				} else {
-					alert("Tasto ctrl non premuto");
-					return document.removeEventListener("click", clearTarget);
-				}
-			});
-			break;
-		*/
 		}
 	});
 }
@@ -130,8 +149,6 @@ async function initialfetchSeat(socket, nickname) {
 
 	posti_matrice.map(async(row, i) => {
 
-		console.log(`Fila num ${i} -> ${row}`);
-
 		let element_div = document.createElement("div");
 		element_div.id = `row ${i}`;
 		element_div.classList.add("seat-row");
@@ -140,89 +157,27 @@ async function initialfetchSeat(socket, nickname) {
 
 		row.map(async(seat, count) => {
 
-			let path = "./static/img/cinema_seat_oos.svg";
+			let path = "";
 
 			if (seat.statusSeat == 0) {
-				console.log(seat.ownedBy);
 				path = "./static/img/cinema_seat_available.svg";
 			} else if (seat.statusSeat == 1) {
-				if (seat.ownedBy == nickname) {
-					path = "./static/img/cinema_seat_takedByMe.svg";
-				} else {
-					path = "./static/img/cinema_seat_oos.svg";
-				}
+
+				seat.ownedBy == nickname ? path = "./static/img/cinema_seat_takedByMe.svg" : path = "./static/img/cinema_seat_oos.svg"; 
+
 			}
 			
 			let element = document.createElement("input");
+
 			element.classList.add("seat");
 			element.type = "image";
 			element.src = path;
 			element.id = `n${i}-${count}`;
-			/*
-			element.onclick = () => {
-				console.log(regex_oos.test(element.src));
-				console.log(element.src);
-				if (nickname != "admin:admin" && regex_oos.test(element.src) == true) 
-			};
-			*/
+
 			element_div.appendChild(element);
 		});
 	});
-
-
-	let tagWelcome = document.getElementById("username"), newNickname;
-    
-	if (nickname == "admin:admin") {
-		tagWelcome.innerHTML = "ADMIN";
-
-		
-		let clear_element = document.createElement("button");
-		clear_element.disabled = true;
-		clear_element.id = "clear_btn";
-
-		clear_element.innerHTML = "Clear seat";
-
-		clear_element.onclick = () => {
-			el_array.forEach(input => {
-				changeValue(input, socket, nickname);
-			});
-		};
-
-		document.getElementsByClassName("sub-menu")[0].append(clear_element);
-
-	} else {
-		tagWelcome.innerHTML = nickname.toLowerCase();
-
-		let nick_element = document.createElement("button");
-		nick_element.innerHTML = "Change Nickname";
-
-		nick_element.onclick = () => {
-			newNickname = prompt("Scegli il tuo nuovo nickname");
-			socket.emit("functionForServer", {
-				req: "changeNickname",
-				oldName: nickname,
-				newName: newNickname
-			});
-		};
-
-		console.log(el_array);
-
-		let reserve_element = document.createElement("button");
-		reserve_element.disabled = true;
-		reserve_element.id = "reserve_btn";
-
-		reserve_element.innerHTML = "Acquista";
-
-		reserve_element.onclick = () => {
-			el_array.forEach(input => {
-				changeValue(input, socket, nickname);
-			});
-		};
-
-		document.getElementsByClassName("sub-menu")[0].append(nick_element, reserve_element);
-	}
 }
-
 
 async function normalFetchSeat(nickname) {
 
@@ -289,22 +244,3 @@ async function getIP() {
 	}, {});
 	return data;
 }
-
-/*
-async function clearRow(socket) {
-	//alert("Seleziona una fila da pulire -> premere ctrl + click");
-	document.addEventListener("click", function clearTarget(event) {
-		if (event.ctrlKey == true) {
-
-			let row = window.event.target.id.replace("n", "").split("-")[0];
-
-			socket.emit("functionForServer", { req: "clearRow", NumRow: row });
-			//clearFromClient(window.event.target, socket);
-			document.removeEventListener("click", clearTarget);
-		} else {
-			alert("Tasto ctrl non premuto");
-			return document.removeEventListener("click", clearTarget);
-		}
-	});
-}
-*/
