@@ -14,18 +14,24 @@ app.get("/", (req, res) => {
 	res.sendFile(__dirname + "/index.html");
 });
 
+let data = JSON.parse(fs.readFileSync("./static/data/data.json"));
+
+data.posti.forEach(arr => {
+	arr.forEach(elem => {
+		if(elem.ownedBy == "") elem.statusSeat = 0;
+	});
+	fs.writeFileSync("./static/data/data.json", JSON.stringify(data, null, "\t"));
+});
 
 //quando un client effettua una connessione
 io.on("connection", async(socket) => {
-
-	let data = JSON.parse(fs.readFileSync("./static/data/data.json"));
 
 	//read user log file to see if socket ip already exist = already visited the site
 	let user_data = JSON.parse(fs.readFileSync("./static/data/user_log.json", "utf-8"));
 
 	socket.on("ip", (arg) => {
 	
-		if (!JSON.stringify(user_data).includes(arg.ip)) {
+		if (!JSON.stringify(user_data).includes(arg.ip_info.ip)) {
 			//if a new user sava all the data (ip and socket id) in the json
 			console.log("new user connected -> ");
 
@@ -37,15 +43,18 @@ io.on("connection", async(socket) => {
 			console.log("existing user connected -> ");
 
 			//finding the exact slot inside the json (retrieving json)
-			let t = user_data.find(element => element.ip == arg.ip);
-			t.id = arg.id;
+			let t = user_data.find(element => element.ip_info.ip == arg.ip_info.ip
+			);
+
+			if(arg.socket_id != "unavailable") t.socket_id = arg.socket_id;
+			
 			//re-writing the file with the edited user_data
 			fs.writeFileSync("./static/data/user_log.json", JSON.stringify(user_data, null, "\t"));
 		}
 		console.log(arg);
 
 		if (arg.username == "admin:admin") {
-			socket.emit("functionFromClient", {
+			socket.emit("functionForClient", {
 				req: "admin",
 				admin: true,
 			});
@@ -54,6 +63,7 @@ io.on("connection", async(socket) => {
 
 	socket.on("functionForServer", (arg) => {
 
+		data = JSON.parse(fs.readFileSync("./static/data/data.json"));
 		let index, seat;
 
 		switch (arg.req) {
@@ -68,7 +78,7 @@ io.on("connection", async(socket) => {
 			seat.statusSeat ^= 1, seat.ownedBy = arg.status.ownedBy;
 			
 			fs.writeFileSync("./static/data/data.json", JSON.stringify(data, null, "\t"));
-			io.emit("functionFromClient", { req: "updatedSeatfromServer" });
+			io.emit("functionForClient", { req: "updatedSeatfromServer" });
 			break;
                 /*
                 case "clear":
@@ -91,14 +101,14 @@ io.on("connection", async(socket) => {
                     });
 
                     fs.writeFileSync("./static/data/data.json", JSON.stringify(data, null));
-                    io.emit("functionFromClient", { req: "updatedSeatfromServer" });
+                    io.emit("functionForClient", { req: "updatedSeatfromServer" });
                     break;
                 case "clearRow":
 
                     data.posti[arg.NumRow] = ["0", "0", "0", "0", "0", "0", "0", "0"];
 
                     fs.writeFileSync("./static/data/data.json", JSON.stringify(data, null));
-                    io.emit("functionFromClient", { req: "updatedSeatfromServer", clear: true });
+                    io.emit("functionForClient", { req: "updatedSeatfromServer", clear: true });
                     break;
                 */
 		}

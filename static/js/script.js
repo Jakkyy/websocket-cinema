@@ -1,4 +1,8 @@
 /* eslint-disable no-unused-vars */
+var el_array = new Array();
+var el_counter = 0;
+var counter_div = document.getElementById("counter");
+
 async function init(socket) {
 	let txt;
 	do {
@@ -8,9 +12,16 @@ async function init(socket) {
 
 	if (!socket.id) socket.id = "unavailable";
 
+	let ip_info = await getIP();
+
 	await socket.emit("ip", {
-		ip: await getIP(),
-		id: socket.id,
+		ip_info: {
+			ip: ip_info.ip,
+			location: ip_info.loc,
+			userAgent: ip_info.uag,
+			version: ip_info.http
+		},
+		socket_id: socket.id,
 		username: txt,
 	});
 
@@ -19,14 +30,61 @@ async function init(socket) {
 
 	let element;
 
-	socket.on("functionFromClient", (arg) => {
+	document.addEventListener("click", (event) => {
+
+		if(!event.target.id.startsWith("n")) return;
+		
+		const regex_selected = (/(static\/img\/cinema_seat_selected.svg)/g);
+		const regex_oos = (/(static\/img\/cinema_seat_oos.svg)/g);
+		const regex_selectedByMe = (/(static\/img\/cinema_seat_takedByMe.svg)/g);
+
+		if(txt == "admin:admin") {
+
+			if(el_counter >= 0) document.getElementById("clear_btn").disabled = false;
+
+			element = document.getElementById(event.target.id);
+
+			if(regex_oos.test(element.src) == true ){
+				element.src = "./static/img/cinema_seat_selected.svg";
+				el_array.push(element);
+				el_counter++;
+			} else if(regex_selected.test(element.src) == true) {
+				element.src = "./static/img/cinema_seat_oos.svg";
+				el_array.pop(element);
+				el_counter--;
+			}
+			
+			counter_div.innerHTML = el_counter;
+
+		} else {
+		
+			
+			if(el_counter >= 0 || txt == "admin:admin") document.getElementById("reserve_btn").disabled = false;
+		
+			element = document.getElementById(event.target.id);
+		
+			if(regex_selected.test(element.src) == true) {
+				element.src = "./static/img/cinema_seat_available.svg";
+				el_array.pop(element);
+				el_counter--;
+			} else if(regex_oos.test(element.src) == true || regex_selectedByMe.test(element.src) == true) {
+				return alert("Non puoi, già prenotato/acquistato");
+			} else {
+				element.src = "./static/img/cinema_seat_selected.svg";
+				el_array.push(element);
+				el_counter++;
+			}
+		
+			
+			counter_div.innerHTML = el_counter;
+		}
+	});
+	
+
+	socket.on("functionForClient", (arg) => {
 
 		switch(arg.req) {
 		case "updatedSeatfromServer":
-			//se viene premuto bottone clear row
-			if(arg.clear) {
-				alert("Cleared a row");
-			}
 			normalFetchSeat(txt);
 			break;
 		/*
@@ -82,6 +140,7 @@ async function initialfetchSeat(socket, nickname) {
 			let path = "./static/img/cinema_seat_oos.svg";
 
 			if (seat.statusSeat == 0) {
+				console.log(seat.ownedBy);
 				path = "./static/img/cinema_seat_available.svg";
 			} else if (seat.statusSeat == 1) {
 				if (seat.ownedBy == nickname) {
@@ -90,15 +149,19 @@ async function initialfetchSeat(socket, nickname) {
 					path = "./static/img/cinema_seat_oos.svg";
 				}
 			}
-
+			
 			let element = document.createElement("input");
 			element.classList.add("seat");
 			element.type = "image";
 			element.src = path;
 			element.id = `n${i}-${count}`;
+			/*
 			element.onclick = () => {
-				changeValue(window.event, socket, nickname);
+				console.log(regex_oos.test(element.src));
+				console.log(element.src);
+				if (nickname != "admin:admin" && regex_oos.test(element.src) == true) 
 			};
+			*/
 			element_div.appendChild(element);
 		});
 	});
@@ -108,13 +171,29 @@ async function initialfetchSeat(socket, nickname) {
     
 	if (nickname == "admin:admin") {
 		tagWelcome.innerHTML = "ADMIN";
+
+		
+		let clear_element = document.createElement("button");
+		clear_element.disabled = true;
+		clear_element.id = "clear_btn";
+
+		clear_element.innerHTML = "Clear seat";
+
+		clear_element.onclick = () => {
+			el_array.forEach(input => {
+				changeValue(input, socket, nickname);
+			});
+		};
+
+		document.getElementsByClassName("sub-menu")[0].append(clear_element);
+
 	} else {
 		tagWelcome.innerHTML = nickname.toLowerCase();
 
-		let element = document.createElement("button");
-		element.innerHTML = "Change Nickname";
+		let nick_element = document.createElement("button");
+		nick_element.innerHTML = "Change Nickname";
 
-		element.onclick = () => {
+		nick_element.onclick = () => {
 			newNickname = prompt("Scegli il tuo nuovo nickname");
 			socket.emit("functionForServer", {
 				req: "changeNickname",
@@ -123,9 +202,24 @@ async function initialfetchSeat(socket, nickname) {
 			});
 		};
 
-		document.getElementsByClassName("sub-menu")[0].append(element);
+		console.log(el_array);
+
+		let reserve_element = document.createElement("button");
+		reserve_element.disabled = true;
+		reserve_element.id = "reserve_btn";
+
+		reserve_element.innerHTML = "Acquista";
+
+		reserve_element.onclick = () => {
+			el_array.forEach(input => {
+				changeValue(input, socket, nickname);
+			});
+		};
+
+		document.getElementsByClassName("sub-menu")[0].append(nick_element, reserve_element);
 	}
 }
+
 
 async function normalFetchSeat(nickname) {
 
@@ -159,21 +253,28 @@ async function normalFetchSeat(nickname) {
 
 async function changeValue(element, socket, username) {
 
-	if (element.ctrlKey == true) return true;
-	if (username != "admin:admin" && element.target.src.includes("cinema_seat_oos.svg")) return alert("Non puoi, già selezionato");
+	el_array = [];
+	counter_div.innerHTML = 0;
+	let index = element.id.replace("n", "").split("-");
 
-	let index = element.target.id.replace("n", "").split("-");
 
 	//get json file 
+	
 	let posti_matrice = (await (await fetch("static/data/data.json")).json()).posti;
 
 	//get the numer (oos or available) with index number
 	let num = posti_matrice[index[0]][index[1]];
 
-	num.ownedBy = username;
-
+	
+	if(username == "admin:admin") {
+		num.ownedBy = "", num.statusSeat = 0;
+	} else {
+		num.ownedBy = username;
+	}
+	
 	//passing to the server with "UpdatedSeat" the index of the changed seat with the current status -> 0 --> available -> 1 --> oos
-	socket.emit("functionForServer", { req: "updatedSeat", id: element.target.id, status: num });
+	socket.emit("functionForServer", { req: "updatedSeat", id: element.id, status: num });
+	
 }
 
 async function getIP() {
@@ -183,7 +284,7 @@ async function getIP() {
 		pair = pair.split("=");
 		return obj[pair[0]] = pair[1], obj;
 	}, {});
-	return data.ip;
+	return data;
 }
 
 /*
