@@ -215,23 +215,21 @@ async function changeValue(element, socket, username) {
 	counter_div.innerHTML = 0;
 	let index = element.id.replace("n", "").split("-");
 
-
 	//get json file 
-	
 	let posti_matrice = (await (await fetch("static/data/data.json")).json()).posti;
 
 	//get the numer (oos or available) with index number
 	let num = posti_matrice[index[0]][index[1]];
 
-	
 	if(username == "admin:admin") {
-		num.ownedBy = "", num.statusSeat = 0;
+		num.ownedBy = "", num.statusSeat = 0, num.timeStamp = null;
 	} else {
 		num.ownedBy = username;
+		num.timeStamp = Math.floor(Date.now() / 1000);
 	}
 	
 	//passing to the server with "UpdatedSeat" the index of the changed seat with the current status -> 0 --> available -> 1 --> oos
-	socket.emit("functionForServer", { req: "updatedSeat", id: element.id, status: num });
+	socket.emit("functionForServer", { req: "updatedSeat", id: element.id, status: num});
 	
 }
 

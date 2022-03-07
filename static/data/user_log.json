@@ -6,7 +6,7 @@
 			"userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36",
 			"version": "http/2"
 		},
-		"socket_id": "zrmHtW3tHPiFp2CIAAAF",
+		"socket_id": "WmzNa4XSXJmT3gzkAAAF",
 		"username": [
 			"jvkky",
 			"admin:admin",
@@ -14,6 +14,19 @@
 			"jvk",
 			"jakky",
 			"d"
+		]
+	},
+	{
+		"ip_info": {
+			"ip": "93.147.78.176",
+			"location": "IT",
+			"userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36",
+			"version": "http/2"
+		},
+		"socket_id": "dzW34fxqWXipmHFHAAAD",
+		"username": [
+			"jvkky",
+			"admin:admin"
 		]
 	}
 ]
