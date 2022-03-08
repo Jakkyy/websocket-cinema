@@ -44,6 +44,7 @@ async function init(socket) {
 	let tagWelcome = document.getElementById("username"), newNickname;
 	//selezione dell'id sub-menu dove saranno messi tutti i bottoni quindi acquista/clear e change nickname
 	let subMenu = document.getElementsByClassName("sub-menu")[0];
+	let logout_element;
 
 	//il socket si mette in ascolto per eventuali eventi dal server
 	socket.on("functionForClient", (arg) => {
@@ -55,6 +56,18 @@ async function init(socket) {
 			break;
 		case "init_btn":
 			//in caso di init_btn ossia di inizializzazione dei bottoni si controlla prima di tutto se l'arg passato è admin
+
+			logout_element = document.createElement("button");
+			logout_element.id = "logout_btn";
+			//testo dentro il bottone
+			logout_element.innerHTML = "Logout";
+			logout_element.onclick = () => {
+				alert("Logout avvenuto");
+				window.location.reload();
+			};
+
+			subMenu.append(logout_element);
+
 			//se è admin = true allora significa che l'accesso è stato effetuato dall'admin altrimenti da un semplice user
 			if(arg.admin) {
 
@@ -321,7 +334,7 @@ async function changeValue(element, socket, username) {
 	}
 	
 	//chiamata al server con functionForServer e con richiuesta di aggiornare i posti a sedere (come altri parametri vengono passati gli id dell'elemento cliccato e lo status quindi i valori modificati)
-	socket.emit("functionForServer", { req: "updatedSeat", id: element.id, status: num});
+	await socket.emit("functionForServer", { req: "updatedSeat", id: element.id, status: num});
 	
 }
 
