@@ -11,14 +11,15 @@
 
 <br>
 
-<h3 style="color:red"> Funzionamento: </h3>
-- Aggiornamento in tempo reale di un sito per la prenotazione dei posti al cimena: tutti gli utenti connessi al sito potranno vedere le sedie prenotate daigli altri utenti e le proprio. Quando un utente prenota una o delle sedie, agli altri utenti viene aggiornata la matrice delle sedie e vedranno le sedie aggiornate.
+<h2 style="color:red"> Funzionamento: </h2>
+Progetto basato su comunicazione tra client e server dove se un client modifica lo stato di una sedia del cinema in automatico tutti gli altri client vedranno la modifica fatta senza il bisogno di ricaricare la pagina. 
+Possibilità anche di avere un admin (inserendo admin:admin come nickname) che potrà gestire i posti e le prenotazioni andando ad annullare a suo piacimento le prenotazioni
 
 <br><br>
 
 <h1 style="color:#c93a3a;font-weight:bold"> BUGS FOUND </h1>
 <ol>
     <li> In caso di selezione di molteplici posti c'è la possibilità che uno o più posti non vengano riservati/eliminati (legato molto probabilmente a el_array).<br> 
-    <li> Il contatore posti selezionati non si azzera completamento dopo le operazioni di acquisto/clear
+    <li> Il contatore dei posti selezionati non si azzera completamento dopo le operazioni di acquisto/clear
 
 </ol>
