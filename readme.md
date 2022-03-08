@@ -23,9 +23,17 @@ Possibilità anche di avere un admin (inserendo admin:admin come nickname) che p
 
 <br>
 
+<h1 style="color:#1ad973;font-weight:bold"> TO ADD </h1>
+<ol>
+    <li> Miglioramenti nella parte grafica (svg sedie, aggiungere spazi personalizzati tra le varie file)
+    <li> Possibilità di vedere da un client il nome della persona che ha prenotato il posto cliccato
+    <li> Creazione di una box con caricamento durante la fase di reserving
+    <li> Maggiore controlli nella parte server per i dati in data.json
+</ol>
+
 <h1 style="color:#c93a3a;font-weight:bold"> BUGS FOUND </h1>
 <ol>
     <li> In caso di selezione di molteplici posti c'è la possibilità che uno o più posti non vengano riservati/eliminati (legato molto probabilmente a el_array).<br> 
     <li> Il contatore dei posti selezionati non si azzera completamento dopo le operazioni di acquisto/clear
-
 </ol>
+
